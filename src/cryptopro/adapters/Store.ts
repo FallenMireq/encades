@@ -1,7 +1,7 @@
 import * as CAdES from 'cadesplugin-types';
-import { CPCertificates } from './Certificates';
+import { CPCertificates, createCPCertificates } from './Certificates';
 
-abstract class Store {
+export abstract class Store {
     public abstract async Certificates(): Promise<CPCertificates>;
     public abstract async Location(): Promise<CAdES.CADESCOM_STORE_LOCATION>;
     public abstract async Name(): Promise<CAdES.CAPICOM_STORE_NAMES | string>;
@@ -29,10 +29,16 @@ export class StoreSync extends Store {
     }
 
     public async Certificates(): Promise<CPCertificates> {
-        return
+        return createCPCertificates(this.comObj.Certificates);
     }
-    public async Location(): Promise<CAdES.CADESCOM_STORE_LOCATION> {}
-    public async Name(): Promise<CAdES.CAPICOM_STORE_NAMES | string> {}
+
+    public async Location(): Promise<CAdES.CADESCOM_STORE_LOCATION> {
+        return this.comObj.Location;
+    }
+
+    public async Name(): Promise<CAdES.CAPICOM_STORE_NAMES | string> {
+        return this.comObj.Name;
+    }
 
     public async Open(
         StoreLocation?: CAdES.CADESCOM_STORE_LOCATION,
@@ -60,6 +66,18 @@ export class StoreAsync extends Store {
         super();
     }
 
+    public async Certificates(): Promise<CPCertificates> {
+        return createCPCertificates(await this.comObj.Certificates);
+    }
+
+    public async Location(): Promise<CAdES.CADESCOM_STORE_LOCATION> {
+        return await this.comObj.Location;
+    }
+
+    public async Name(): Promise<CAdES.CAPICOM_STORE_NAMES | string> {
+        return await this.comObj.Name;
+    }
+
     public async Open(
         StoreLocation?: CAdES.CADESCOM_STORE_LOCATION,
         StoreName?: CAdES.CAPICOM_STORE_NAMES | string,
@@ -81,10 +99,23 @@ export class StoreAsync extends Store {
     }
 }
 
-export function createStore(comObj: CAdES.Sync.IStore | CAdES.Async.IStore): Store {
-    if (CAdES.isSync(comObj)) {
+export function wrapStore(
+    comObj: CAdES.Sync.IStore | CAdES.Async.IStore
+): Store {
+    if (CAdES.isSync<CAdES.Sync.IStore, CAdES.Async.IStore>(comObj)) {
         return new StoreSync(comObj);
     } else {
         return new StoreAsync(comObj);
+    }
+}
+
+export async function createStore(): Promise<Store> {
+    if (CAdES.isSync<CAdES.Sync.IWebClassFactory, CAdES.Async.IWebClassFactory>(CAdES.cadesplugin)) {
+        let comObj = CAdES.cadesplugin.CreateObject(CAdES.ProgIds.Store);
+        return wrapStore(comObj);
+    } else {
+        await CAdES.cadesplugin;
+        let comObj = await CAdES.cadesplugin.CreateObjectAsync(CAdES.ProgIds.Store);
+        return wrapStore(comObj);
     }
 }
