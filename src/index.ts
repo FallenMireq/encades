@@ -1,5 +1,5 @@
 import * as CAdES from 'cadesplugin-types';
-import { createStore, CPCertificate } from './cryptopro/adapters/@';
+import { createStore, Certificate } from './cryptopro/adapters/@';
 
 async function work() {
     let store = await createStore();
@@ -43,7 +43,7 @@ async function work() {
 }
 
 async function readCertificate(
-    certificatePromise: Promise<CPCertificate>
+    certificatePromise: Promise<Certificate>
 ): Promise<{ Thumbprint: string; SerialNumber: string; CN: string }> {
     let certificate = await certificatePromise;
     let [Thumbprint, SerialNumber, CN] = await Promise.all([
@@ -56,11 +56,7 @@ async function readCertificate(
     return { Thumbprint, SerialNumber, CN };
 }
 
-let q: any = CAdES.cadesplugin;
-q.set_log_level(q.LOG_LEVEL_DEBUG);
+// let q: any = CAdES.cadesplugin;
+// q.set_log_level(q.LOG_LEVEL_DEBUG);
 
 work().then(cs => cs.forEach(c => console.log(c)));
-setTimeout(() => {
-    console.log('newrequest');
-    work().then(cs => cs.forEach(c => console.log(c)));
-}, 2000);

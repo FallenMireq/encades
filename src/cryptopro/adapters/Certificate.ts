@@ -1,6 +1,7 @@
 import * as CAdES from 'cadesplugin-types';
+import { ComWrapper } from './ComWrapper';
 
-export abstract class CPCertificate {
+export abstract class Certificate<T = CAdES.ICPCertificate> extends ComWrapper<T> {
     public abstract async SerialNumber(): Promise<string>;
     public abstract async SubjectName(): Promise<string>;
     public abstract async Thumbprint(): Promise<string>;
@@ -12,11 +13,7 @@ export abstract class CPCertificate {
     public abstract async HasPrivateKey(): Promise<boolean>;
 }
 
-export class CPCertificateSync extends CPCertificate {
-    public constructor(protected comObj: CAdES.Sync.ICPCertificate) {
-        super();
-    }
-
+export class CertificateSync extends Certificate<CAdES.Sync.ICPCertificate> {
     public async SerialNumber(): Promise<string> {
         return this.comObj.SerialNumber;
     }
@@ -44,11 +41,7 @@ export class CPCertificateSync extends CPCertificate {
     }
 }
 
-export class CPCertificateAsync extends CPCertificate {
-    public constructor(protected comObj: CAdES.Async.ICPCertificate) {
-        super();
-    }
-
+export class CertificateAsync extends Certificate<CAdES.Async.ICPCertificate> {
     public async SerialNumber(): Promise<string> {
         return await this.comObj.SerialNumber;
     }
@@ -76,10 +69,12 @@ export class CPCertificateAsync extends CPCertificate {
     }
 }
 
-export function createCPCertificate(
-    comObj: CAdES.Sync.ICPCertificate | CAdES.Async.ICPCertificate
-): CPCertificate {
-    return CAdES.isSync(comObj)
-        ? new CPCertificateSync(comObj as CAdES.Sync.ICPCertificate)
-        : new CPCertificateAsync(comObj as CAdES.Async.ICPCertificate);
+export function wrapCertificate(comObj: CAdES.Sync.ICPCertificate): Certificate<CAdES.Sync.ICPCertificate>;
+export function wrapCertificate(comObj: CAdES.Async.ICPCertificate): Certificate<CAdES.Async.ICPCertificate>;
+export function wrapCertificate(comObj: CAdES.ICPCertificate): Certificate<CAdES.ICPCertificate> {
+    if (CAdES.isSync<CAdES.Sync.ICPCertificate, CAdES.Async.ICPCertificate>(comObj)) {
+        return new CertificateSync(comObj);
+    } else {
+        return new CertificateAsync(comObj);
+    }
 }

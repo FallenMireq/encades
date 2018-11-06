@@ -1,43 +1,35 @@
 import * as CAdES from 'cadesplugin-types';
-import { CPCertificate, createCPCertificate } from './Certificate';
+import { Certificate, wrapCertificate } from './Certificate';
+import { ComWrapper } from './ComWrapper';
 
-export abstract class CPCertificates {
+export abstract class Certificates<T = CAdES.ICertificates> extends ComWrapper<T> {
     public abstract async Count(): Promise<number>;
 
-    public abstract async Item(Index: number): Promise<CPCertificate>;
+    public abstract async Item(Index: number): Promise<Certificate>;
 
-    public abstract async Find(
-        FindType: CAdES.CAPICOM_CERTIFICATE_FIND_TYPE
-    ): Promise<CPCertificates>;
-    public abstract async Find(
-        FindType: CAdES.CAPICOM_CERTIFICATE_FIND_TYPE,
-        varCriteria: any
-    ): Promise<CPCertificates>;
+    public abstract async Find(FindType: CAdES.CAPICOM_CERTIFICATE_FIND_TYPE): Promise<Certificates>;
+    public abstract async Find(FindType: CAdES.CAPICOM_CERTIFICATE_FIND_TYPE, varCriteria: any): Promise<Certificates>;
     public abstract async Find(
         FindType: CAdES.CAPICOM_CERTIFICATE_FIND_TYPE,
         varCriteria: any,
         bFindValidOnly: boolean
-    ): Promise<CPCertificates>;
+    ): Promise<Certificates>;
 }
 
-export class CPCertificatesSync extends CPCertificates {
-    public constructor(protected comObj: CAdES.Sync.ICertificates) {
-        super();
-    }
-
+export class CertificatesSync extends Certificates<CAdES.Sync.ICertificates> {
     public async Count(): Promise<number> {
         return this.comObj.Count;
     }
 
-    public async Item(Index: number): Promise<CPCertificate> {
-        return createCPCertificate(await this.comObj.Item(Index) as CAdES.Sync.ICPCertificate);
+    public async Item(Index: number): Promise<Certificate<CAdES.Sync.ICPCertificate>> {
+        return wrapCertificate((await this.comObj.Item(Index)) as CAdES.Sync.ICPCertificate);
     }
 
     public async Find(
         FindType: CAdES.CAPICOM_CERTIFICATE_FIND_TYPE,
         varCriteria?: any,
         bFindValidOnly?: boolean
-    ): Promise<CPCertificates> {
+    ): Promise<Certificates<CAdES.Sync.ICertificates>> {
         let resultCom: CAdES.Sync.ICertificates;
 
         if (varCriteria === undefined) {
@@ -48,28 +40,24 @@ export class CPCertificatesSync extends CPCertificates {
             resultCom = this.comObj.Find(FindType, varCriteria, bFindValidOnly);
         }
 
-        return createCPCertificates(resultCom);
+        return wrapCertificates(resultCom);
     }
 }
 
-export class CPCertificatesAsync extends CPCertificates {
-    public constructor(protected comObj: CAdES.Async.ICertificates) {
-        super();
-    }
-
+export class CertificatesAsync extends Certificates<CAdES.Async.ICertificates> {
     public async Count(): Promise<number> {
         return await this.comObj.Count;
     }
 
-    public async Item(Index: number): Promise<CPCertificate> {
-        return createCPCertificate(await this.comObj.Item(Index) as CAdES.Async.ICPCertificate);
+    public async Item(Index: number): Promise<Certificate<CAdES.Async.ICPCertificate>> {
+        return wrapCertificate((await this.comObj.Item(Index)) as CAdES.Async.ICPCertificate);
     }
 
     public async Find(
         FindType: CAdES.CAPICOM_CERTIFICATE_FIND_TYPE,
         varCriteria?: any,
         bFindValidOnly?: boolean
-    ): Promise<CPCertificates> {
+    ): Promise<Certificates<CAdES.Async.ICertificates>> {
         let resultCom: CAdES.Async.ICertificates;
 
         if (varCriteria === undefined) {
@@ -80,14 +68,14 @@ export class CPCertificatesAsync extends CPCertificates {
             resultCom = await this.comObj.Find(FindType, varCriteria, bFindValidOnly);
         }
 
-        return createCPCertificates(resultCom);
+        return wrapCertificates(resultCom);
     }
 }
 
-export function createCPCertificates(
-    comObj: CAdES.Sync.ICertificates | CAdES.Async.ICertificates
-): CPCertificates {
+export function wrapCertificates(comObj: CAdES.Sync.ICertificates): Certificates<CAdES.Sync.ICertificates>;
+export function wrapCertificates(comObj: CAdES.Async.ICertificates): Certificates<CAdES.Async.ICertificates>;
+export function wrapCertificates(comObj: CAdES.ICertificates): Certificates<CAdES.ICertificates> {
     return CAdES.isSync(comObj)
-        ? new CPCertificatesSync(comObj as CAdES.Sync.ICertificates)
-        : new CPCertificatesAsync(comObj as CAdES.Async.ICertificates);
+        ? new CertificatesSync(comObj as CAdES.Sync.ICertificates)
+        : new CertificatesAsync(comObj as CAdES.Async.ICertificates);
 }
