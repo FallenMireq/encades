@@ -17,7 +17,7 @@ export class AttributesSync extends Attributes<CAdES.Sync.ICPAttributes> {
     }
 
     public async Add(attribute: Attribute<CAdES.Sync.ICPAttribute2>): Promise<void> {
-        this.comObj.Add(ComWrapper.getComObject(attribute));
+        this.comObj.Add(ComWrapper.unwrap(attribute));
     }
 
     public async Item(index: number): Promise<Attribute<CAdES.Sync.ICPAttribute2>> {
@@ -39,7 +39,7 @@ export class AttributesAsync extends Attributes<CAdES.Async.ICPAttributes> {
     }
 
     public async Add(attribute: Attribute<CAdES.Async.ICPAttribute2>): Promise<void> {
-        await this.comObj.Add(ComWrapper.getComObject(attribute));
+        await this.comObj.Add(ComWrapper.unwrap(attribute));
     }
 
     public async Item(index: number): Promise<Attribute<CAdES.Async.ICPAttribute2>> {

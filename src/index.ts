@@ -14,9 +14,7 @@ async function work() {
         CAdES.CAPICOM_CERTIFICATE_FIND_TYPE.CAPICOM_CERTIFICATE_FIND_KEY_USAGE,
         CAdES.CAPICOM_KEY_USAGE.CAPICOM_DIGITAL_SIGNATURE_KEY_USAGE
     );
-    certificates = await certificates.Find(
-        CAdES.CAPICOM_CERTIFICATE_FIND_TYPE.CAPICOM_CERTIFICATE_FIND_TIME_VALID
-    );
+    certificates = await certificates.Find(CAdES.CAPICOM_CERTIFICATE_FIND_TYPE.CAPICOM_CERTIFICATE_FIND_TIME_VALID);
     certificates = await certificates.Find(
         CAdES.CAPICOM_CERTIFICATE_FIND_TYPE.CAPICOM_CERTIFICATE_FIND_SUBJECT_NAME,
         'TestName'
@@ -24,14 +22,10 @@ async function work() {
 
     let certificatesCount = await certificates.Count();
 
-    let certificatesListAwaiters: Array<
-        Promise<{ Thumbprint: string; SerialNumber: string; CN: string }>
-    > = [];
+    let certificatesListAwaiters: Array<Promise<{ Thumbprint: string; SerialNumber: string; CN: string }>> = [];
 
     for (let index = 0; index < certificatesCount; index++) {
-        certificatesListAwaiters.push(
-            readCertificate(certificates.Item(index + 1))
-        );
+        certificatesListAwaiters.push(readCertificate(certificates.Item(index + 1)));
     }
 
     let certificatesList = await Promise.all(certificatesListAwaiters);
@@ -49,9 +43,7 @@ async function readCertificate(
     let [Thumbprint, SerialNumber, CN] = await Promise.all([
         certificate.Thumbprint(),
         certificate.SerialNumber(),
-        certificate.GetInfo(
-            CAdES.CAPICOM_CERT_INFO_TYPE.CAPICOM_CERT_INFO_SUBJECT_SIMPLE_NAME
-        ),
+        certificate.GetInfo(CAdES.CAPICOM_CERT_INFO_TYPE.CAPICOM_CERT_INFO_SUBJECT_SIMPLE_NAME),
     ]);
     return { Thumbprint, SerialNumber, CN };
 }
