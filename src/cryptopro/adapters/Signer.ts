@@ -1,5 +1,6 @@
 import * as CAdES from 'cadesplugin-types';
 import { ComWrapper } from './ComWrapper';
+import { Attributes, wrapAttributes } from './Attributes';
 import { Certificate, wrapCertificate } from './Certificate';
 
 export abstract class Signer<T = CAdES.ICPSigner6> extends ComWrapper<T> {
@@ -8,7 +9,7 @@ export abstract class Signer<T = CAdES.ICPSigner6> extends ComWrapper<T> {
     public abstract async Options(): Promise<CAdES.CAPICOM_CERTIFICATE_INCLUDE_OPTION>;
     public abstract async SetOptions(certificate: CAdES.CAPICOM_CERTIFICATE_INCLUDE_OPTION): Promise<void>;
 
-    public abstract async AuthenticatedAttributes2(): Promise<CAdES.ICPAttributes>;
+    public abstract async AuthenticatedAttributes2(): Promise<Attributes>;
 }
 
 export class SignerSync extends Signer<CAdES.Sync.ICPSigner6> {
@@ -27,8 +28,8 @@ export class SignerSync extends Signer<CAdES.Sync.ICPSigner6> {
         this.comObj.Options = options;
     }
 
-    public async AuthenticatedAttributes2(): Promise<CAdES.ICPAttributes> {
-        return this.comObj.AuthenticatedAttributes2;
+    public async AuthenticatedAttributes2(): Promise<Attributes> {
+        return wrapAttributes(this.comObj.AuthenticatedAttributes2);
     }
 }
 
@@ -48,8 +49,8 @@ export class SignerAsync extends Signer<CAdES.Async.ICPSigner6> {
         await this.comObj.propset_Options(options);
     }
 
-    public async AuthenticatedAttributes2(): Promise<CAdES.ICPAttributes> {
-        return await this.comObj.AuthenticatedAttributes2;
+    public async AuthenticatedAttributes2(): Promise<Attributes> {
+        return wrapAttributes(await this.comObj.AuthenticatedAttributes2);
     }
 }
 

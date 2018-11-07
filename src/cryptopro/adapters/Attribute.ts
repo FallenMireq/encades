@@ -41,3 +41,14 @@ export function wrapAttribute(comObj: CAdES.ICPAttribute2): Attribute<CAdES.ICPA
         return new AttributeAsync(comObj);
     }
 }
+
+export async function createAttribute(): Promise<Attribute> {
+    if (CAdES.isSync<CAdES.Sync.IWebClassFactory, CAdES.Async.IWebClassFactory>(CAdES.cadesplugin)) {
+        let comObj = CAdES.cadesplugin.CreateObject(CAdES.ProgIds.CPAttribute);
+        return wrapAttribute(comObj);
+    } else {
+        await CAdES.cadesplugin;
+        let comObj = await CAdES.cadesplugin.CreateObjectAsync(CAdES.ProgIds.CPAttribute);
+        return wrapAttribute(comObj);
+    }
+}
