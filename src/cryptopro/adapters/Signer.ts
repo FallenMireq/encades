@@ -60,3 +60,14 @@ export function wrapSigner(comObj: CAdES.ICPSigner6): Signer<CAdES.ICPSigner6> {
         ? new SignerSync(comObj)
         : new SignerAsync(comObj);
 }
+
+export async function createSigner(): Promise<Signer> {
+    if (CAdES.isSync<CAdES.Sync.IWebClassFactory, CAdES.Async.IWebClassFactory>(CAdES.cadesplugin)) {
+        let comObj = CAdES.cadesplugin.CreateObject(CAdES.ProgIds.CPSigner);
+        return wrapSigner(comObj);
+    } else {
+        await CAdES.cadesplugin;
+        let comObj = await CAdES.cadesplugin.CreateObjectAsync(CAdES.ProgIds.CPSigner);
+        return wrapSigner(comObj);
+    }
+}
