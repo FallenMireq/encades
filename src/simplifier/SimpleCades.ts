@@ -15,12 +15,14 @@ export interface ISignCadesOptions {
     include: CAdES.CAPICOM_CERTIFICATE_INCLUDE_OPTION;
     cadesType: CAdES.CADESCOM_CADES_TYPE;
     detached: boolean;
+    contentEncoding: CAdES.CADESCOM_CONTENT_ENCODING_TYPE;
 }
 
 export class SignCadesOptions implements ISignCadesOptions {
     public include: CAdES.CAPICOM_CERTIFICATE_INCLUDE_OPTION;
     public cadesType: CAdES.CADESCOM_CADES_TYPE;
     public detached: boolean;
+    public contentEncoding: CAdES.CADESCOM_CONTENT_ENCODING_TYPE;
 
     constructor(options?: Partial<ISignCadesOptions>) {
         options = options || {};
@@ -28,11 +30,13 @@ export class SignCadesOptions implements ISignCadesOptions {
             include: CAdES.CAPICOM_CERTIFICATE_INCLUDE_OPTION.CAPICOM_CERTIFICATE_INCLUDE_CHAIN_EXCEPT_ROOT,
             cadesType: CAdES.CADESCOM_CADES_TYPE.CADESCOM_CADES_X_LONG_TYPE_1,
             detached: false,
+            contentEncoding: CAdES.CADESCOM_CONTENT_ENCODING_TYPE.CADESCOM_BASE64_TO_BINARY,
         };
 
         this.include = options.include !== undefined ? options.include : defaults.include;
         this.cadesType = options.cadesType !== undefined ? options.cadesType : defaults.cadesType;
         this.detached = options.detached !== undefined ? options.detached : defaults.detached;
+        this.contentEncoding = options.contentEncoding !== undefined ? options.contentEncoding : defaults.contentEncoding;
     }
 
     public toObject(overrides?: Partial<ISignCadesOptions>): ISignCadesOptions {
@@ -41,6 +45,7 @@ export class SignCadesOptions implements ISignCadesOptions {
             include: overrides.include !== undefined ? overrides.include : this.include,
             cadesType: overrides.cadesType !== undefined ? overrides.cadesType : this.cadesType,
             detached: overrides.detached !== undefined ? overrides.detached : this.detached,
+            contentEncoding: overrides.contentEncoding !== undefined ? overrides.contentEncoding : this.contentEncoding,
         };
     }
 }
@@ -92,12 +97,25 @@ export class SimpleCades {
     }
 
     public async signCades(text: string, certificateInfo: CertificateInfo, attributes: SimpleAttribute[] = [], options?: Partial<ISignCadesOptions>): Promise<string> {
-        let base64 = Base64.encode(text);
-        return this.signCades64(base64, certificateInfo, attributes, options);
+        let trustedOptions = this.SignCadesOptions.toObject(options);
+        switch (trustedOptions.contentEncoding) {
+            case CAdES.CADESCOM_CONTENT_ENCODING_TYPE.CADESCOM_BASE64_TO_BINARY:
+                let data = Base64.encode(text);
+                return this.signCadesRaw(data, certificateInfo, attributes, options);
+            case CAdES.CADESCOM_CONTENT_ENCODING_TYPE.CADESCOM_STRING_TO_UCS2LE:
+                return this.signCadesRaw(text, certificateInfo, attributes, options);
+            default:
+                throw new Error('Invalid ContentEncoding');
+        }
     }
 
-    public async signCades64(data: string, certificateInfo: CertificateInfo, attributes: SimpleAttribute[] = [], options?: Partial<ISignCadesOptions>): Promise<string> {
+    public async signCadesBase64(data: string, certificateInfo: CertificateInfo, attributes: SimpleAttribute[] = [], options?: Partial<ISignCadesOptions>): Promise<string> {
+        options = options || {};
+        options.contentEncoding = CAdES.CADESCOM_CONTENT_ENCODING_TYPE.CADESCOM_BASE64_TO_BINARY;
+        return this.signCadesRaw(data, certificateInfo, attributes, options);
+    }
 
+    protected async signCadesRaw(data: string, certificateInfo: CertificateInfo, attributes: SimpleAttribute[] = [], options?: Partial<ISignCadesOptions>): Promise<string> {
         let trustedOptions = this.SignCadesOptions.toObject(options);
 
         let store = await createStore();
@@ -140,7 +158,7 @@ export class SimpleCades {
         }
 
         let signedData = await createSignedData();
-        await signedData.SetContentEncoding(CAdES.CADESCOM_CONTENT_ENCODING_TYPE.CADESCOM_BASE64_TO_BINARY);
+        await signedData.SetContentEncoding(trustedOptions.contentEncoding);
         await signedData.SetContent(data);
 
         let signature = await signedData.SignCades(
