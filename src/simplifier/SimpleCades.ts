@@ -1,5 +1,5 @@
 import * as CAdES from 'cadesplugin-types';
-import { createStore, Certificate, createSigner, createSignedData, createAttribute } from '../cryptopro/adapters/@';
+import { createStore, Certificate, createSigner, createSignedData, createAttribute } from '../cryptopro/@';
 import { Base64 } from '../util/Base64';
 
 import { CertificateInfo } from './CertificateInfo';

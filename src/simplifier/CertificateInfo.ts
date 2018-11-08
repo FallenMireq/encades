@@ -1,5 +1,5 @@
 import * as CAdES from 'cadesplugin-types';
-import { Certificate } from '../cryptopro/adapters/@';
+import { Certificate } from '../cryptopro/@';
 
 export class CertificateInfo {
     public readonly Thumbprint: string;
