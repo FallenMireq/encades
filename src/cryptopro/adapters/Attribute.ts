@@ -6,10 +6,15 @@ export abstract class Attribute<T = CAdES.ICPAttribute2> extends ComWrapper<T> {
     public abstract async OID(): Promise<OID>;
     public abstract async Value(): Promise<string>;
     public abstract async SetValue(value: string): Promise<void>;
+    public abstract async Name(): Promise<CAdES.CADESCOM_ATTRIBUTE>;
+    public abstract async SetName(value: CAdES.CADESCOM_ATTRIBUTE): Promise<void>;
+    public abstract async ValueEncoding(): Promise<CAdES.CAPICOM_ENCODING_TYPE>;
+    public abstract async SetValueEncoding(value: CAdES.CAPICOM_ENCODING_TYPE): Promise<void>;
 }
 
 export class AttributeSync extends Attribute<CAdES.Sync.ICPAttribute2> {
     public async OID(): Promise<OID> {
+        this.comObj.ValueEncoding
         return wrapOID(this.comObj.OID);
     }
     public async Value(): Promise<string> {
@@ -17,6 +22,18 @@ export class AttributeSync extends Attribute<CAdES.Sync.ICPAttribute2> {
     }
     public async SetValue(value: string): Promise<void> {
         this.comObj.Value = value;
+    }
+    public async Name(): Promise<CAdES.CADESCOM_ATTRIBUTE> {
+        return this.comObj.Name;
+    }
+    public async SetName(value: CAdES.CADESCOM_ATTRIBUTE): Promise<void> {
+        this.comObj.Name = value;
+    }
+    public async ValueEncoding(): Promise<CAdES.CAPICOM_ENCODING_TYPE> {
+        return this.comObj.ValueEncoding;
+    }
+    public async SetValueEncoding(value: CAdES.CAPICOM_ENCODING_TYPE): Promise<void> {
+        this.comObj.ValueEncoding = value;
     }
 }
 
@@ -29,6 +46,18 @@ export class AttributeAsync extends Attribute<CAdES.Async.ICPAttribute2> {
     }
     public async SetValue(value: string): Promise<void> {
         await this.comObj.propset_Value(value);
+    }
+    public async Name(): Promise<CAdES.CADESCOM_ATTRIBUTE> {
+        return await this.comObj.Name;
+    }
+    public async SetName(value: CAdES.CADESCOM_ATTRIBUTE): Promise<void> {
+        this.comObj.propset_Name(value);
+    }
+    public async ValueEncoding(): Promise<CAdES.CAPICOM_ENCODING_TYPE> {
+        return await this.comObj.ValueEncoding;
+    }
+    public async SetValueEncoding(value: CAdES.CAPICOM_ENCODING_TYPE): Promise<void> {
+        await this.comObj.propset_ValueEncoding(value);
     }
 }
 

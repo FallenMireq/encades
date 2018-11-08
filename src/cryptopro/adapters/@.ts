@@ -1,5 +1,5 @@
 export { About, createAbout } from './About';
-export { Attribute } from './Attribute';
+export { Attribute, createAttribute } from './Attribute';
 export { Attributes } from './Attributes';
 export { Certificate } from './Certificate';
 export { Certificates } from './Certificates';
