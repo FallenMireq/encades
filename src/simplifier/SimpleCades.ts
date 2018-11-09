@@ -1,5 +1,5 @@
 import * as CAdES from 'cadesplugin-types';
-import { createStore, Certificate, createSigner, createSignedData, createAttribute } from '../cryptopro/@';
+import { Certificate, WebFactory } from '../cryptopro/@';
 import { Base64 } from '../util/Base64';
 
 import { CertificateInfo } from './CertificateInfo';
@@ -66,7 +66,8 @@ export class SimpleCades {
     }
 
     public async getCertificates(filters: IFilterCriteria[]): Promise<CertificateInfo[]> {
-        let store = await createStore();
+        let factory = new WebFactory();
+        let store = await factory.Store();
         await store.Open(this.StoreLocation, this.StoreName);
 
         let certificates = await store.Certificates();
@@ -118,7 +119,8 @@ export class SimpleCades {
     protected async signCadesRaw(data: string, certificateInfo: CertificateInfo, attributes: SimpleAttribute[] = [], options?: Partial<ISignCadesOptions>): Promise<string> {
         let trustedOptions = this.SignCadesOptions.toObject(options);
 
-        let store = await createStore();
+        let factory = new WebFactory();
+        let store = await factory.Store();
         await store.Open(this.StoreLocation, this.StoreName);
 
         let certificates = await store.Certificates();
@@ -143,21 +145,21 @@ export class SimpleCades {
         if (certificate === null)
             throw new Error('Certificate not found');
 
-        let signer = await createSigner();
+        let signer = await factory.Signer();
         await signer.SetCertificate(certificate);
         await signer.SetOptions(trustedOptions.include);
 
         if (attributes.length > 0) {
             let cadesAttributes = await signer.AuthenticatedAttributes2();
             for (let i = 0; i < attributes.length; i++) {
-                let attr = await createAttribute();
+                let attr = await factory.Attribute();
                 await attr.SetName(attributes[i].Name);
                 await attr.SetValue(attributes[i].Value);
                 await cadesAttributes.Add(attr);
             }
         }
 
-        let signedData = await createSignedData();
+        let signedData = await factory.SignedData();
         await signedData.SetContentEncoding(trustedOptions.contentEncoding);
         await signedData.SetContent(data);
 

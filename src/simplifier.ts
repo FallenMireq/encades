@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     select.appendChild(option);
 
     certificates.forEach((certificate, i) => {
-        let caption = document.createTextNode(`${certificate.CN} [${certificate.Thumbprint}]`);
+        let caption = document.createTextNode(`${certificate.CN} [${certificate.Thumbprint}] (${certificate.ValidFromDate} - ${certificate.ValidToDate})`);
         let option = document.createElement('option');
         option.value = `${i}`;
         option.appendChild(caption);
