@@ -58,6 +58,11 @@ module.exports = () => {
                         name: 'vendors',
                         chunks: 'all',
                     },
+                    encades: {
+                        test: /[\\/]src\/cryptopro[\\/]/,
+                        name: 'encades',
+                        chunks: 'all',
+                    },
                 },
             },
         },
